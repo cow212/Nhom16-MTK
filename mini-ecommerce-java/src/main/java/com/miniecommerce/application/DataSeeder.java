@@ -94,7 +94,7 @@ public class DataSeeder implements CommandLineRunner {
         product.setStockQuantity(stock);
         product.setSku(sku);
         product.setCategory(category);
-        product.setImageUrl("https://picsum.photos/seed/" + imageSeed + "/600/450");
+        product.setImageUrl("/products/" + imageSeed + ".svg");
         product.setActive(true);
         return product;
     }
