@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Dữ liệu mẫu (Seeder).
@@ -85,6 +86,23 @@ public class DataSeeder implements CommandLineRunner {
         System.out.println("[DataSeeder] Đã seed " + products.size() + " sản phẩm mẫu.");
     }
 
+    /**
+     * Ảnh thật (đã tải về local) cho từng sản phẩm theo imageSeed.
+     */
+    private static final Map<String, String> IMAGE_FILES = Map.ofEntries(
+            Map.entry("dt-tai-nghe", "dt-tai-nghe.jpg"),
+            Map.entry("dt-ban-phim", "dt-ban-phim.jpg"),
+            Map.entry("dt-sac-nhanh", "dt-sac-nhanh.jpg"),
+            Map.entry("dt-loa-mini", "dt-loa-mini.jpg"),
+            Map.entry("tt-ao-thun", "tt-ao-thun.png"),
+            Map.entry("tt-quan-jean", "tt-quan-jean.jpg"),
+            Map.entry("tt-ao-khoac", "tt-ao-khoac.jpg"),
+            Map.entry("gd-chen-su", "gd-chen-su.jpg"),
+            Map.entry("gd-noi-inox", "gd-noi-inox.jpg"),
+            Map.entry("gd-den-ban", "gd-den-ban.webp"),
+            Map.entry("st-giay-chay", "st-giay-chay.jpg"),
+            Map.entry("st-tham-yoga", "st-tham-yoga.png"));
+
     private Product product(String name, String description, long price, int stock,
                             String sku, String category, String imageSeed) {
         Product product = new Product();
@@ -94,7 +112,7 @@ public class DataSeeder implements CommandLineRunner {
         product.setStockQuantity(stock);
         product.setSku(sku);
         product.setCategory(category);
-        product.setImageUrl("/products/" + imageSeed + ".svg");
+        product.setImageUrl("/products/" + IMAGE_FILES.get(imageSeed));
         product.setActive(true);
         return product;
     }
