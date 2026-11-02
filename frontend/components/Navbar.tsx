@@ -15,6 +15,7 @@ import {
   CreditCard,
   LogIn,
   LogOut,
+  Package,
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -90,6 +91,13 @@ export default function Navbar() {
             </Link>
           )}
           <Link
+            href="/orders"
+            className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition"
+          >
+            <Package className="w-4 h-4" />
+            <span className="font-medium">Đơn hàng</span>
+          </Link>
+          <Link
             href="/cart"
             className="relative p-2 text-muted-foreground hover:text-foreground"
           >
@@ -149,6 +157,9 @@ export default function Navbar() {
             )}
             <Link href="/" className="text-xl font-bold">
               Trang chủ
+            </Link>
+            <Link href="/orders" className="flex items-center gap-2 text-lg">
+              <Package className="w-5 h-5" /> Đơn hàng của tôi
             </Link>
             <Link href="/cart" className="flex items-center gap-2 text-lg">
               <ShoppingCart className="w-5 h-5" /> Giỏ hàng ({itemCount()})

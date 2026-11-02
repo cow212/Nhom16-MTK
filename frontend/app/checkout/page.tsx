@@ -37,6 +37,7 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState<'info' | 'payment' | 'success'>('info');
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'MOMO' | 'VNPAY'>('COD');
+  const [bill, setBill] = useState<OrderDto | null>(null);
 
   const [form, setForm] = useState<AddressForm>({
     fullName: '',
@@ -96,6 +97,7 @@ export default function CheckoutPage() {
         }
       }
 
+      setBill(createdOrder); // giữ thông tin để hiển thị hoá đơn
       clearCart();
       setStep('success');
       toast.success('Đặt hàng thành công!');
@@ -110,29 +112,84 @@ export default function CheckoutPage() {
   };
 
   if (step === 'success') {
+    const billItems = bill?.items || [];
+    const payLabel =
+      paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng' : `Đã thanh toán qua ${paymentMethod}`;
     return (
-      <div className="container mx-auto px-4 py-12 max-w-md">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+      <div className="container mx-auto px-4 py-12 max-w-lg">
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="w-8 h-8 text-green-600" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">Đặt hàng thành công!</h2>
-          <p className="text-muted-foreground mb-8">
-            Cảm ơn bạn đã mua sắm tại Mini E-commerce.
-          </p>
-          <div className="space-y-3 text-left">
-            <div className="flex items-center gap-2 text-sm">
-              <Mail className="w-4 h-4 text-muted-foreground" />
-              <span>Email xác nhận đã được gửi.</span>
+          <h2 className="text-2xl font-bold mb-1">Đặt hàng thành công!</h2>
+          <p className="text-muted-foreground text-sm">Cảm ơn bạn đã mua sắm tại Mini E-commerce.</p>
+        </div>
+
+        {bill && (
+          <div className="rounded-xl border border-border bg-card p-6 mb-6">
+            <div className="flex items-start justify-between border-b border-dashed border-border pb-4 mb-4">
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Mã đơn hàng</p>
+                <p className="font-mono font-bold text-lg">{bill.orderCode}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Trạng thái</p>
+                <span className="inline-block px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                  {payLabel}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Package className="w-4 h-4 text-muted-foreground" />
-              <span>Đơn hàng đang được xử lý.</span>
+
+            {billItems.length > 0 ? (
+              <ul className="space-y-2 mb-4">
+                {billItems.map((i) => (
+                  <li key={i.productId} className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-2">
+                      <span className="text-muted-foreground">×{i.quantity}</span>
+                      {i.productName}
+                    </span>
+                    <span className="font-medium">{formatCurrency(i.unitPrice * i.quantity)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground mb-4">
+                Đơn hàng của bạn đang được xử lý.
+              </p>
+            )}
+
+            <div className="border-t border-dashed border-border pt-4 mb-1 flex items-center justify-between">
+              <span className="font-semibold">Tổng tiền</span>
+              <span className="text-xl font-bold text-primary">
+                {formatCurrency(bill.totalAmount)}
+              </span>
             </div>
+            {bill.shippingAddress && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Giao tới: {bill.shippingAddress}
+              </p>
+            )}
           </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          {bill && (
+            <Link
+              href={`/orders/${bill.id}`}
+              className="px-5 py-3 border border-border rounded-lg hover:bg-muted text-sm font-medium inline-flex items-center justify-center gap-2"
+            >
+              <Package className="w-4 h-4" /> Xem hoá đơn chi tiết
+            </Link>
+          )}
+          <Link
+            href="/orders"
+            className="px-5 py-3 border border-border rounded-lg hover:bg-muted text-sm font-medium inline-flex items-center justify-center gap-2"
+          >
+            <Mail className="w-4 h-4" /> Đơn hàng của tôi
+          </Link>
           <Link
             href="/"
-            className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 inline-flex items-center gap-2"
+            className="px-5 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm font-medium inline-flex items-center justify-center gap-2"
           >
             <Home className="w-4 h-4" /> Tiếp tục mua sắm
           </Link>
