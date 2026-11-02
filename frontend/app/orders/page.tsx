@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/components/AuthProvider';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { Package, Clock, ChevronRight, RefreshCw, LogIn } from 'lucide-react';
+import { Package, Clock, ChevronRight, RefreshCw, LogIn, XCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: 'Chờ xử lý',
@@ -26,6 +27,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -39,6 +41,21 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  // Hủy đơn (chỉ cho đơn chưa hoàn thành) → sau đó có thể đặt lại bằng phương thức khác
+  const handleCancel = async (orderId: number) => {
+    if (!window.confirm('Hủy đơn này để đặt lại bằng phương thức thanh toán khác?')) return;
+    setCancellingId(orderId);
+    try {
+      await api.put(`/api/orders/${orderId}/cancel`);
+      toast.success('Đã hủy đơn. Bạn có thể đặt lại với phương thức khác.');
+      await fetchOrders();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Hủy đơn thất bại.');
+    } finally {
+      setCancellingId(null);
     }
   };
 
@@ -104,6 +121,7 @@ export default function OrdersPage() {
                 <th className="px-6 py-4 text-sm font-semibold text-muted-foreground">Ngày</th>
                 <th className="px-6 py-4 text-sm font-semibold text-muted-foreground text-right">Tổng tiền</th>
                 <th className="px-6 py-4 text-sm font-semibold text-muted-foreground">Trạng thái</th>
+                <th className="px-6 py-4 text-sm font-semibold text-muted-foreground text-center">Thao tác</th>
                 <th className="px-6 py-4 text-sm font-semibold text-muted-foreground">Chi tiết</th>
               </tr>
             </thead>
@@ -124,6 +142,20 @@ export default function OrdersPage() {
                     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${STATUS_COLORS[o.status] || 'bg-gray-100 text-gray-700 border-gray-200'}`}>
                       {STATUS_LABELS[o.status] || o.status}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    {o.status !== 'COMPLETED' && o.status !== 'CANCELLED' ? (
+                      <button
+                        onClick={() => handleCancel(o.id)}
+                        disabled={cancellingId === o.id}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50 transition"
+                      >
+                        <XCircle className="w-3 h-3" />
+                        {cancellingId === o.id ? 'Đang hủy...' : 'Hủy đơn'}
+                      </button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <Link
